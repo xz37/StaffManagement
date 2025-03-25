@@ -1,6 +1,9 @@
 package com.example.staffmanagement
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,15 +13,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
+
 
 data class Staff(
     val id: Int,
@@ -35,9 +51,9 @@ fun StaffDirectoryScreen(token: String) {
 
     // TODO: replace with actual data
     var staffList = listOf(
-        Staff(1, "example1@example.com", "John", "Doe", "image1"),
-        Staff(2, "example2@example.com", "Jane", "Smith", "image2"),
-        Staff(3, "example3@example.com", "Alice", "Johnson", "image3"),
+        Staff(1, "example1@example.com", "John", "Doe", "https://reqres.in/img/faces/1-image.jpg"),
+        Staff(2, "example2@example.com", "Jane", "Smith", "https://reqres.in/img/faces/2-image.jpg"),
+        Staff(3, "example3@example.com", "Alice", "Johnson", "https://reqres.in/img/faces/3-image.jpg"),
     )
 
     Column(
@@ -63,6 +79,23 @@ fun StaffDirectoryScreen(token: String) {
 
 @Composable
 fun StaffItem(staff: Staff) {
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(staff.avatar) {
+        withContext(Dispatchers.IO) {
+            try {
+                val url = URL(staff.avatar)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.doInput = true
+                connection.connect()
+                val inputStream = connection.inputStream
+                bitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,14 +107,28 @@ fun StaffItem(staff: Staff) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.__image),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap!!.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(30.dp),
+                        color = Color.Gray
+                    )
+                }
+            }
 
             Column(
                 modifier = Modifier.padding(start = 16.dp)
