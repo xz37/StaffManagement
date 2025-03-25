@@ -58,8 +58,6 @@ fun LoginScreen(
                 connection.requestMethod = "POST"
                 connection.setRequestProperty("Content-Type", "application/json")
                 connection.doOutput = true
-                connection.connectTimeout = 15000
-                connection.readTimeout = 15000
 
                 val jsonPayload = JSONObject().apply {
                     put("email", email)
