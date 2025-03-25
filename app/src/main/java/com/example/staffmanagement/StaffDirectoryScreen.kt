@@ -29,7 +29,7 @@ data class Staff(
 )
 
 @Composable
-fun StaffScreen(token: String) {
+fun StaffDirectoryScreen(token: String) {
 
     // var staffList by remember { mutableStateOf<List<Staff>>(emptyList()) }
 
@@ -100,6 +100,6 @@ fun StaffItem(staff: Staff) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun StaffScreenPreview() {
-    StaffScreen(token = "abc123")
+fun StaffDirectoryScreenPreview() {
+    StaffDirectoryScreen(token = "abc123")
 }
