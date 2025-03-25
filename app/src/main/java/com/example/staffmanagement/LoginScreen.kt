@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onLoginButtonClicked: () -> Unit,
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -64,7 +66,7 @@ fun LoginScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = {},
+            onClick = onLoginButtonClicked,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
@@ -80,5 +82,5 @@ fun LoginScreen() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen()
+    LoginScreen(onLoginButtonClicked = {})
 }
