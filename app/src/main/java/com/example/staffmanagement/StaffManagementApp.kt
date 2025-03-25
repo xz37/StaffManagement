@@ -1,6 +1,8 @@
 package com.example.staffmanagement
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,6 +18,7 @@ enum class StaffManagementScreen() {
 fun StaffManagementApp(
     navController: NavHostController = rememberNavController()
 ) {
+    val loginToken = remember { mutableStateOf("") }
 
     NavHost(
         navController = navController,
@@ -23,13 +26,14 @@ fun StaffManagementApp(
     ) {
         composable(route = StaffManagementScreen.Login.name) {
             LoginScreen(
-                onLoginButtonClicked = {
+                onLoginSuccess = { token ->
+                    loginToken.value = token
                     navController.navigate(StaffManagementScreen.StaffDirectory.name)
                 }
             )
         }
         composable(route = StaffManagementScreen.StaffDirectory.name) {
-            StaffDirectoryScreen(token = "abc123")
+            StaffDirectoryScreen(token = loginToken.value)
         }
     }
 }
