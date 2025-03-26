@@ -7,6 +7,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.staffmanagement.ui.screens.LoginScreen
+import com.example.staffmanagement.ui.screens.StaffDirectoryScreen
 
 
 enum class StaffManagementScreen() {
