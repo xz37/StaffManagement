@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">StaffManagement</string>
+    <string name="staff_management_login">Staff Management Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="staff_directory">Staff Directory</string>
+    <string name="token">Token: %1$s</string>
+    <string name="no_staff_found">No staff found</string>
 </resources>

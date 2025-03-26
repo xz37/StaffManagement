@@ -16,11 +16,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.staffmanagement.R
 import com.example.staffmanagement.ui.viewmodels.LoginViewModel
 
 @Composable
@@ -43,7 +45,7 @@ fun LoginScreen(
     ) {
 
         Text(
-            text = "Staff Management Login",
+            text = stringResource(R.string.staff_management_login),
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 32.dp)
         )
@@ -51,7 +53,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = loginUiState.email,
             onValueChange = { loginViewModel.updateEmail(it) },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
@@ -61,7 +63,7 @@ fun LoginScreen(
         OutlinedTextField(
             value = loginUiState.password,
             onValueChange = { loginViewModel.updatePassword(it) },
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
@@ -79,7 +81,7 @@ fun LoginScreen(
             enabled = loginViewModel.isFormValid && !loginUiState.isLoading,
         ) {
             Text(
-                text = "Login",
+                text = stringResource(R.string.login),
             )
         }
 

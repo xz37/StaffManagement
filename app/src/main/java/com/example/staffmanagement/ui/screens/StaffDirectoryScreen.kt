@@ -23,10 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.staffmanagement.R
 import com.example.staffmanagement.ui.viewmodels.StaffDirectoryViewModel
 import com.example.staffmanagement.ui.viewmodels.StaffWithImage
 
@@ -42,13 +44,13 @@ fun StaffDirectoryScreen(
             .padding(vertical = 40.dp, horizontal = 16.dp)
     ) {
         Text(
-            text = "Staff Directory",
+            text = stringResource(R.string.staff_directory),
             fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
         Text(
-            text = "Token: $token",
+            text = stringResource(R.string.token, token),
             modifier = Modifier.padding(bottom = 16.dp),
         )
 
@@ -69,7 +71,7 @@ fun StaffDirectoryScreen(
             }
         } else if (staffDirectoryUiState.errorMessage.isEmpty() && staffDirectoryUiState.staffList.isEmpty()) {
             Text(
-                text = "No staff found",
+                text = stringResource(R.string.no_staff_found),
                 modifier = Modifier.padding(16.dp)
             )
         }
