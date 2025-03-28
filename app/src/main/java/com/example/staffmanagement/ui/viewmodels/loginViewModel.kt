@@ -1,5 +1,6 @@
 package com.example.staffmanagement.ui.viewmodels
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -28,17 +29,35 @@ class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    private val emailPattern = Regex("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")
-    private val passwordPattern = Regex("^[a-zA-Z0-9]{6,10}$")
+    private val EMAIL_PATTERN = Regex(
+        "[a-zA-Z0-9+._%\\-]{1,256}" +
+                "@" +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+                "(" +
+                "\\." +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+                ")+"
+    )
+    private val PASSWORD_PATTERN = Regex("^[a-zA-Z0-9]{6,10}$")
 
     val isEmailValid: Boolean
-        get() = _uiState.value.email.isNotEmpty() && emailPattern.matches(_uiState.value.email)
+        get() = checkEmail(_uiState.value.email)
 
     val isPasswordValid: Boolean
-        get() = _uiState.value.password.isNotEmpty() && passwordPattern.matches(_uiState.value.password)
+        get() = checkPassword(_uiState.value.password)
 
     val isFormValid: Boolean
         get() = isEmailValid && isPasswordValid
+
+    @VisibleForTesting
+    fun checkEmail(email: String): Boolean {
+        return email.isNotEmpty() && EMAIL_PATTERN.matches(email)
+    }
+
+    @VisibleForTesting
+    fun checkPassword(password: String): Boolean {
+        return password.isNotEmpty() && PASSWORD_PATTERN.matches(password)
+    }
 
     fun updateEmail(email: String) {
         _uiState.update { currentState ->
