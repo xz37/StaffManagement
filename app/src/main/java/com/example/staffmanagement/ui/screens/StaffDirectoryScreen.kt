@@ -35,9 +35,9 @@ import com.example.staffmanagement.ui.viewmodels.StaffWithImage
 @Composable
 fun StaffDirectoryScreen(
     token: String,
-    viewModel: StaffDirectoryViewModel = viewModel()
+    staffDirectoryViewModel: StaffDirectoryViewModel = viewModel()
 ) {
-    val staffDirectoryUiState by viewModel.uiState.collectAsState()
+    val staffDirectoryUiState by staffDirectoryViewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier

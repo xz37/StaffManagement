@@ -16,6 +16,16 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
+sealed class FetchStaffResult {
+    data class Success(val staffList: List<Staff>) : FetchStaffResult()
+    data class Error(val message: String) : FetchStaffResult()
+}
+
+sealed class ImageLoadResult {
+    data class Success(val bitmap: Bitmap) : ImageLoadResult()
+    data class Error(val message: String) : ImageLoadResult()
+}
+
 data class StaffWithImage(
     val staff: Staff,
     val bitmap: Bitmap? = null,
@@ -37,22 +47,23 @@ class StaffDirectoryViewModel : ViewModel() {
         fetchStaffList()
     }
 
-    fun fetchStaffList() {
+    private fun fetchStaffList() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = "") }
-            val result = performFetchStaffList()
-            if (result.first) {
-                @Suppress("UNCHECKED_CAST")
-                val staffList = (result.second as List<Staff>).map { StaffWithImage(staff = it) }
-                _uiState.update { it.copy(staffList = staffList, isLoading = false, errorMessage = "") }
-                loadImagesForStaff(staffList) // 加载图片
-            } else {
-                _uiState.update { it.copy(isLoading = false, errorMessage = result.second as String) }
+            when (val result = performFetchStaffList()) {
+                is FetchStaffResult.Success -> {
+                    val staffList = result.staffList.map { StaffWithImage(staff = it) }
+                    _uiState.update { it.copy(staffList = staffList, isLoading = false, errorMessage = "") }
+                    loadImagesForStaff(staffList)
+                }
+                is FetchStaffResult.Error -> {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                }
             }
         }
     }
 
-    private suspend fun performFetchStaffList(): Pair<Boolean, Any> {
+    private suspend fun performFetchStaffList(): FetchStaffResult {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("https://reqres.in/api/users?page=1")
@@ -78,16 +89,16 @@ class StaffDirectoryViewModel : ViewModel() {
                                 )
                             )
                         }
-                        Pair(true, newStaffList)
+                        FetchStaffResult.Success(newStaffList)
                     }
                 } else {
                     connection.errorStream?.bufferedReader()?.use { reader ->
                         val errorResponse = reader.readText()
-                        Pair(false, "Error: $errorResponse")
-                    } ?: Pair(false, "Error: HTTP $responseCode")
+                        FetchStaffResult.Error("Error: $errorResponse")
+                    } ?: FetchStaffResult.Error("Error: HTTP $responseCode")
                 }
             } catch (e: Exception) {
-                Pair(false, "Connection error: ${e.message ?: "Unknown error"}")
+                FetchStaffResult.Error("Connection error: ${e.message ?: "Unknown error"}")
             }
         }
     }
@@ -99,7 +110,10 @@ class StaffDirectoryViewModel : ViewModel() {
                 _uiState.update { currentState ->
                     val updatedList = currentState.staffList.map {
                         if (it.staff == staffWithImage.staff) {
-                            it.copy(bitmap = result.first, imageError = result.second)
+                            when (result) {
+                                is ImageLoadResult.Success -> it.copy(bitmap = result.bitmap, imageError = "")
+                                is ImageLoadResult.Error -> it.copy(bitmap = null, imageError = result.message)
+                            }
                         } else {
                             it
                         }
@@ -110,7 +124,7 @@ class StaffDirectoryViewModel : ViewModel() {
         }
     }
 
-    private suspend fun loadImage(avatarUrl: String): Pair<Bitmap?, String> {
+    private suspend fun loadImage(avatarUrl: String): ImageLoadResult {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL(avatarUrl)
@@ -120,10 +134,13 @@ class StaffDirectoryViewModel : ViewModel() {
                 val inputStream = connection.inputStream
                 val bitmap = BitmapFactory.decodeStream(inputStream)
                 inputStream.close()
-                Pair(bitmap, "")
+                bitmap?.let {
+                    ImageLoadResult.Success(it)
+                } ?: ImageLoadResult.Error("Failed to decode bitmap")
+
             } catch (e: Exception) {
                 e.printStackTrace()
-                Pair(null, "Failed to load image: ${e.message}")
+                ImageLoadResult.Error("Failed to load image: ${e.message}")
             }
         }
     }
