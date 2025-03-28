@@ -15,6 +15,11 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
+sealed class LoginResult {
+    data class Success(val token: String) : LoginResult()
+    data class Error(val message: String) : LoginResult()
+}
+
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -80,21 +85,23 @@ class LoginViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val result = performLogin(_uiState.value.email, _uiState.value.password)
-                if (result.first) {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            isLoginSuccessful = true,
-                            token = result.second
-                        )
+                when (val result = performLogin(_uiState.value.email, _uiState.value.password)) {
+                    is LoginResult.Success -> {
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                isLoading = false,
+                                isLoginSuccessful = true,
+                                token = result.token
+                            )
+                        }
                     }
-                } else {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            errorMessage = result.second
-                        )
+                    is LoginResult.Error -> {
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                isLoading = false,
+                                errorMessage = result.message
+                            )
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -108,7 +115,7 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    private suspend fun performLogin(email: String, password: String): Pair<Boolean, String> {
+    private suspend fun performLogin(email: String, password: String): LoginResult {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("https://reqres.in/api/login?delay=5")
@@ -135,7 +142,7 @@ class LoginViewModel : ViewModel() {
                         val response = reader.readText()
                         val jsonResponse = JSONObject(response)
                         val token = jsonResponse.getString("token")
-                        Pair(true, token)
+                        LoginResult.Success(token)
                     }
                 } else {
                     connection.errorStream?.bufferedReader()?.use { reader ->
@@ -143,14 +150,14 @@ class LoginViewModel : ViewModel() {
                         try {
                             val jsonError = JSONObject(errorResponse)
                             val error = jsonError.getString("error")
-                            Pair(false, error)
+                            LoginResult.Error(error)
                         } catch (e: Exception) {
-                            Pair(false, "Error: $errorResponse")
+                            LoginResult.Error("Error: $errorResponse")
                         }
-                    } ?: Pair(false, "Error: HTTP $responseCode")
+                    } ?: LoginResult.Error("Error: HTTP $responseCode")
                 }
             } catch (e: Exception) {
-                Pair(false, "Connection error: ${e.message ?: "Unknown error"}")
+                LoginResult.Error("Connection error: ${e.message ?: "Unknown error"}")
             }
         }
     }
