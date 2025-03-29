@@ -1,5 +1,8 @@
 package com.example.staffmanagement.network
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import com.example.staffmanagement.data.Staff
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -16,6 +19,8 @@ private const val BASE_URL = "https://reqres.in/api"
 
 interface ApiService {
     suspend fun login(email: String, password: String): ApiResult<String>
+    suspend fun performFetchStaffList(): ApiResult<List<Staff>>
+    suspend fun loadImage(imageUrl: String): ApiResult<Bitmap>
 }
 
 class NetworkApiService : ApiService {
@@ -62,6 +67,69 @@ class NetworkApiService : ApiService {
                 }
             } catch (e: Exception) {
                 ApiResult.Error("Connection error: ${e.message ?: "Unknown error"}")
+            }
+        }
+    }
+
+    override suspend fun performFetchStaffList(): ApiResult<List<Staff>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$BASE_URL/users?page=1")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    connection.inputStream.bufferedReader().use { reader ->
+                        val response = reader.readText()
+                        val jsonResponse = JSONObject(response)
+                        val data = jsonResponse.getJSONArray("data")
+                        val staffList = mutableListOf<Staff>()
+
+                        for (i in 0 until data.length()) {
+                            val staffObject = data.getJSONObject(i)
+                            staffList.add(
+                                Staff(
+                                    id = staffObject.getInt("id"),
+                                    email = staffObject.getString("email"),
+                                    firstName = staffObject.getString("first_name"),
+                                    lastName = staffObject.getString("last_name"),
+                                    avatar = staffObject.getString("avatar")
+                                )
+                            )
+                        }
+                        ApiResult.Success(staffList)
+                    }
+                } else {
+                    connection.errorStream?.bufferedReader()?.use { reader ->
+                        val errorResponse = reader.readText()
+                        ApiResult.Error("Error: $errorResponse")
+                    } ?: ApiResult.Error("Error: HTTP $responseCode")
+                }
+            } catch (e: Exception) {
+                ApiResult.Error("Connection error: ${e.message ?: "Unknown error"}")
+            }
+        }
+    }
+
+    override suspend fun loadImage(imageUrl: String): ApiResult<Bitmap> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL(imageUrl)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.doInput = true
+                connection.connect()
+
+                val inputStream = connection.inputStream
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream.close()
+
+                bitmap?.let {
+                    ApiResult.Success(it)
+                } ?: ApiResult.Error("Failed to decode bitmap")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ApiResult.Error("Failed to load image: ${e.message}")
             }
         }
     }
