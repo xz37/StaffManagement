@@ -67,7 +67,7 @@ fun LoginScreen(
                 supportingText = {
                     if (loginUiState.email.isNotEmpty() && !loginViewModel.isEmailValid) {
                         Text(
-                            text = "Please enter a valid email address",
+                            text = stringResource(R.string.email_prompt),
                             color = Color.Red
                         )
                     }
@@ -87,7 +87,7 @@ fun LoginScreen(
                 supportingText = {
                     if (loginUiState.password.isNotEmpty() && !loginViewModel.isPasswordValid) {
                         Text(
-                            text = "Password must be 6-10 alphanumeric characters",
+                            text = stringResource(R.string.password_prompt),
                             color = Color.Red
                         )
                     }
