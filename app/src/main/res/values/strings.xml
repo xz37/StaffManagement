@@ -7,4 +7,6 @@
     <string name="staff_directory">Staff Directory</string>
     <string name="token">Token: %1$s</string>
     <string name="no_staff_found">No staff found</string>
+    <string name="email_prompt">Please enter a valid email address</string>
+    <string name="password_prompt">Password must be 6–10 alphanumeric characters</string>
 </resources>
