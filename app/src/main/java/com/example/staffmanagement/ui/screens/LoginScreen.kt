@@ -39,7 +39,9 @@ fun LoginScreen(
     val loginUiState by loginViewModel.uiState.collectAsState()
 
     if (loginUiState.isLoginSuccessful && loginUiState.token.isNotEmpty()) {
-        onLoginSuccess(loginUiState.token)
+        val token = loginUiState.token
+        loginViewModel.resetLoginState()
+        onLoginSuccess(token)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
