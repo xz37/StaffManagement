@@ -69,6 +69,15 @@ class LoginViewModel : ViewModel() {
         }
     }
 
+    fun resetLoginState() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isLoginSuccessful = false,
+                token = ""
+            )
+        }
+    }
+
     fun login() {
         if (!isFormValid) return
 
